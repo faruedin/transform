@@ -1,0 +1,200 @@
+<html>
+    <head>
+        <!-- put in jquery library first! -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        
+        <style>
+            
+            body{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 0;
+            }
+        
+        </style>
+        
+    
+        
+        <!-- put in our javascript code-->
+        <script>
+        
+            //global vars
+            let cn;
+            let ctx;
+            
+            //size of box to start with
+            let wb;
+            //space that each box is in
+            let boxSpace;
+            
+            //this array stores all by boxes
+            let boxes = [];
+            
+            
+            let mouse = { x: null, y: null };
+            let pmouse = { x: null, y: null };
+            
+            //how many boxes going across the width
+            let numWidthBox = 20;
+            
+            //margin between boxes
+            let marBox = 10;
+            
+            $(document).ready(function(){
+               //all our code goes in here 
+                cn = document.getElementById('mycanvas');
+                
+                //init something called the context
+                ctx = cn.getContext('2d');
+                
+                //set the canvas width and height
+                cn.width = window.innerWidth;
+                cn.height = window.innerHeight;
+                
+                //call first function
+                setInterval( animate, 33);
+               
+                boxSpace = cn.width / numWidthBox;
+                
+                wb = boxSpace - (marBox * 2);
+                
+                //how many boxes will fit in our screen
+                let numHeightBox = cn.height / wb;
+                
+                //make all my boxes
+                for(let y = 0; y < numHeightBox; y++){
+                    for(let x = 0; x< numWidthBox; x++){
+                        boxes.push( new Box(x*boxSpace, y*boxSpace)  );
+                    }
+                }
+                                   
+                
+              
+                
+                //all events go here!
+                //DOM events go first, put inside of quotes
+                //cn.addEventListener('click', drawSquares );
+                cn.addEventListener('mousemove', updateBox);
+                
+            });
+            
+
+            
+            //all animation frames get drawn here
+            function animate(){
+                //clear screen
+                ctx.clearRect(0,0,cn.width, cn.height);
+                
+                
+                //draw a back grid
+                drawBackGrid();
+                
+                //put the boxes up on the screen
+                for(let i = 0; i < boxes.length; i++){
+                    //see if i'm close to a mouse
+                    boxes[i].distMouse();
+                    //draw me
+                    boxes[i].drawMe();
+                    //readjust
+                    boxes[i].moveMe();
+                }
+            }
+            
+            function drawBackGrid(){
+                for(let x = 0; x < cn.width; x+=15){
+                    let uniformCol = cn.width/255;
+                    let d = Math.abs(mouse.x - x)/uniformCol;
+                    
+                    
+                    ctx.fillStyle = 'rgba(255,' +d+ ',0,0.8)';
+                    ctx.fillRect(x,0, 15, cn.height);
+                }
+            }
+            
+            
+            //class box
+            function Box (xin, yin){
+                //my location is determined when i am made for the first time
+                let loc = {x:xin+marBox, y:yin+marBox};
+                
+                //get a width and height when you start to be the same as wB;
+                this.w = wb;
+                this.h = wb;
+                
+                //what is my color
+                this.c = 'rgba(0,0,0,1)';
+                
+                this.drawMe = function () {
+                    ctx.fillStyle = this.c;
+                    ctx.fillRect(loc.x, loc.y, this.w, this.h);
+                    
+                };
+                
+                this.moveMe = function() {
+                    if(this.w > wb){
+                        this.w -= 1;
+                    }
+                    if(loc.x < xin+marBox){
+                        loc.x += .5;
+                    }
+                    
+                };
+                
+                this.distMouse = function () {
+                    var a = mouse.x - loc.x;
+                    var b = mouse.y - loc.y;
+
+                    var d = Math.sqrt( a*a + b*b );
+                    
+                    if(d < 200){
+                        this.w = wb + ((200 - d)/5);
+                    }
+                    
+                    if(d<200){
+                        loc.x -= ((200-d)/5);
+                    }
+                }
+                
+                
+                
+                
+                
+                
+            }
+            
+            
+            //mousemove
+            function updateBox (e) {
+                mouse.x = e.offsetX || e.pageX - this.offsetLeft;
+                mouse.y = e.offsetY || e.pageY - this.offsetTop;
+            }
+            
+        
+            //always keep
+            function degToRad (deg) {
+                var radians = (deg * Math.PI / 180);
+                return radians;
+            }
+            
+            function getRandom(min, max){
+                return Math.random() * (max - min) + min;
+            }
+            
+            function getRandomInt(min,max){
+                return Math.floor(Math.random()* (max-min+1)) + min;
+            }
+        
+        </script>
+
+    
+    </head>
+    
+    <body>
+    
+        <canvas id="mycanvas"></canvas>
+    
+    </body>
+
+
+</html>
